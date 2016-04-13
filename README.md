@@ -17,10 +17,9 @@ CrossMessage.usePromise($q); // angular's $q, or jQuery's deferred for example
 
 ### Some document
 ```javascript
-let crossMessage = new CrossMessage(aFrameWindow);
+let crossMessage = new CrossMessage({otherWindow: theFrameWindow});
 crossMessage.postEvent('giveMeSomeResult', data).then((result) => {
     // ...
-    return 
 }, (error) => {
     // ...
 });
@@ -29,7 +28,7 @@ crossMessage.postEvent('giveMeSomeResult', data).then((result) => {
 ### Another document
 ```javascript
 //
-let crossMessage = new CrossMessage();
+let crossMessage = new CrossMessage({otherWindow: window.parent});
 crossMessage.onEvent('giveMeSomeResult', (data) => {
     // ...
     
