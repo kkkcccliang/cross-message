@@ -88,7 +88,11 @@ export class CrossMessage {
     }
 
     _handleReq(event, eventData, id, eventName) {
-        let result = this._callbacks[eventName](eventData.$data),
+        let cb = this._callbacks[eventName],
+            result = typeof cb === 'function' ? cb(eventData.$data) : {
+                status: REJECTED,
+                message: `No specified callback of ${eventName}`
+            },
             $type = `${id}${_responsePrefix}${eventName}`,
             win = event.source, d = this._domain;
         // The callback returns a promise
