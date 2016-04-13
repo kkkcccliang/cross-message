@@ -1,0 +1,27 @@
+{
+  "name": "cross-message",
+  "description": "A high level component of cross-document message.",
+  "main": "src/cross-message.js",
+  "authors": [
+    "liangjingzhan"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "cross-document",
+    "message",
+    "postmessage"
+  ],
+  "homepage": "https://github.com/liangjingzhan/cross-message",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
