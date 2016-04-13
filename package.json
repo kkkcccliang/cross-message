@@ -2,7 +2,7 @@
   "name": "cross-message",
   "version": "1.0.0",
   "description": "A high level component of cross-document message.",
-  "main": "src/cross-message.js",
+  "main": "dist/cross-message.js",
   "scripts": {
     "test": "karma start --single-run",
     "test:watch": "karma start --auto-watch --log-level debug --colors"
