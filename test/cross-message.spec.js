@@ -2,7 +2,7 @@
  * Created by liangjz on 4/8/16.
  */
 
-import {CrossMessage} from './cross-message';
+import {CrossMessage} from '../src/cross-message';
 
 describe('CrossMessage', () => {
 
@@ -17,7 +17,8 @@ describe('CrossMessage', () => {
                     // ES5 code here
                     var crossMessage = new CrossMessage({
                         otherWindow: window.parent,
-                        thisWindow: window
+                        thisWindow: window,
+                        knownWindowOnly: false // for test
                     });
                     crossMessage.onEvent('crossEventWithTrue', function () { return true; });
                     crossMessage.onEvent('crossEventWithFalse', function () { return false; });
@@ -59,7 +60,8 @@ describe('CrossMessage', () => {
     let crossMessageParent = new CrossMessage({
         otherWindow: frameDoc.contentWindow,
         thisWindow: window,
-        domain: '*'
+        domain: '*',
+        knownWindowOnly: false // for test
     });
 
     describe('Test postEvent', () => {

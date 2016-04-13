@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../dist/cross-message.js"></script>
+    <script>
+        function onLoad() {
+            var crossMessage = new CrossMessage({
+                otherWindow: window.parent
+            });
+            var rets = [{status: 'resolved', message: 'OK'}, {status: 'rejected', message: 'Fail'}];
+
+            crossMessage.onEvent('indexEvent', function (data) {
+                console.log('Frame: on indexEvent', data);
+                return rets[Math.round(Math.random())];
+            });
+
+            var cal = 0;
+            var interval = setInterval(function () {
+                crossMessage.postEvent('frameEvent', 'frame data' + ++cal).then(function (result) {
+                    console.log('Frame: frameEvent resolved with', result);
+                }, function (error) {
+                    console.log('Frame: frameEvent rejected with', error);
+                });
+            }, 1000);
+
+            setTimeout(function () {
+                clearInterval(interval);
+            }, 10000);
+        }
+    </script>
+</head>
+<body onload="onLoad();">
+<div>
+    This is frame
+</div>
+</body>
+</html>

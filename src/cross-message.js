@@ -48,7 +48,7 @@ export class CrossMessage {
             throw new Error('Must specify "otherWindow" to communicate with');
         }
 
-        options = assign(options, {thisWindow: window, domain: '*', knownWindowOnly: true});
+        options = assign({thisWindow: window, domain: '*', knownWindowOnly: true}, options);
         let thisWindow = options.thisWindow;
         let otherWin = this._otherWin = options.otherWindow;
         let knownWindowOnly = !!options.knownWindowOnly;
