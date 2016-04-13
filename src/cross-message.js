@@ -3,7 +3,14 @@
  */
 
 
-import {setPromise, getPromise, eventListener, isObject, isPromise} from './utils';
+import {
+    setPromise,
+    getPromise,
+    eventListener,
+    isObject,
+    isPromise,
+    assign
+} from './utils';
 
 let {addEventListener, removeEventListener} = eventListener();
 let _uniqueId = 0;
@@ -32,15 +39,16 @@ export class CrossMessage {
      *        .domain           [optional] Default '*'
      *        .knownWindowOnly  [optional] If true, receive event from 'otherWindow' only. Default to true
      */
-    constructor(options = {otherWindow: null, thisWindow: window, domain: '*', knownWindowOnly: true}) {
+    constructor(options = {}) {
         if (!getPromise()) {
             throw new Error('No "Promise" feature available in browser, must specify another promise lib');
         }
 
         if (!options.otherWindow) {
-            throw new Error('Must specify at least one window to communicate with');
+            throw new Error('Must specify "otherWindow" to communicate with');
         }
 
+        options = assign(options, {thisWindow: window, domain: '*', knownWindowOnly: true});
         let thisWindow = options.thisWindow;
         let otherWin = this._otherWin = options.otherWindow;
         let knownWindowOnly = !!options.knownWindowOnly;
