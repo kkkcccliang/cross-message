@@ -26,33 +26,43 @@ export class CrossMessage {
 
     /**
      * Using window.postMessage magic. See https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
-     * @param targetWindow A window object that we want to communicate with.
-     * @param domain
+     * @param options
+     *        .otherWindow     The window that we want to communicate with.
+     *        .thisWindow       [optional] Default to current window that includes 'CrossMessage'
+     *        .domain           [optional] Default '*'
+     *        .knownWindowOnly  [optional] If true, receive event from 'otherWindow' only. Default to true
      */
-    constructor(targetWindow, domain = '*') {
+    constructor(options = {otherWindow: null, thisWindow: window, domain: '*', knownWindowOnly: true}) {
         if (!getPromise()) {
             throw new Error('No "Promise" feature available in browser, must specify another promise lib');
         }
 
-        this._sender = window; // Default to current 'window'
-        this._receiver = targetWindow; // Window that receive message, can be determined after first event
-        this._domain = domain;
+        if (!options.otherWindow) {
+            throw new Error('Must specify at least one window to communicate with');
+        }
+
+        let thisWindow = options.thisWindow;
+        let otherWin = this._otherWin = options.otherWindow;
+        let knownWindowOnly = !!options.knownWindowOnly;
+        this._domain = options.domain;
         this._callbacks = {};
         this._promises = {};
 
-        addEventListener(this._sender, 'message', (event) => {
-            if (!this._receiver) {
-                this._receiver = event.source;
+        addEventListener(thisWindow, 'message', (event) => {
+            if (knownWindowOnly && otherWin !== event.source) {
+                // Ignores the event doesn't belongs to this
+                return;
             }
+
             if (!this._domain) {
                 this._domain = event.origin || event.originalEvent.origin;
             }
 
             let eventData = event.data, matchRequest, matchResponse;
             if (matchRequest = eventData.$type.match(_requestReg)) {
-                this._handleReq(eventData, matchRequest[1], matchRequest[2]);
+                this._handleReq(event, eventData, matchRequest[1], matchRequest[2]);
             } else if (matchResponse = eventData.$type.match(_responseReg)) {
-                this._handleResp(eventData, matchResponse[1], matchResponse[2]);
+                this._handleResp(event, eventData, matchResponse[1], matchResponse[2]);
             }
         });
     }
@@ -61,7 +71,7 @@ export class CrossMessage {
         let defer = getPromise().defer();
         ++_uniqueId;
 
-        this._receiver.postMessage({
+        this._otherWin.postMessage({
             $type: `${_uniqueId}${_requestPrefix}${event}`,
             $data: data
         }, this._domain);
@@ -76,29 +86,36 @@ export class CrossMessage {
     offEvent(event, fn) {
         delete this._callbacks[event];
     }
-    
-    _handleReq(eventData, id, eventName) {
+
+    _handleReq(event, eventData, id, eventName) {
         let result = this._callbacks[eventName](eventData.$data),
             $type = `${id}${_responsePrefix}${eventName}`,
-            r = this._receiver, d = this._domain;
+            win = event.source, d = this._domain;
+        // The callback returns a promise
         if (isPromise(result)) {
             result.then((realResult) => {
-                r.postMessage({$type: $type, $data: {status: RESOLVED, message: realResult}}, d);
+                win.postMessage({$type: $type, $data: {status: RESOLVED, message: realResult}}, d);
             }, (error) => {
-                r.postMessage({$type: $type, $data: {status: REJECTED, message: error}}, d)
+                win.postMessage({$type: $type, $data: {status: REJECTED, message: error}}, d)
             });
             return;
-        } else if (!isObject(result)) {
+        }
+        // The callback returns with true/false, or an object without 'status' property(treat it as resolved with this object)
+        else if (!isObject(result) || !result.status) {
             result = {status: !!result ? RESOLVED : REJECTED, message: result}
         }
-        r.postMessage({$type: $type, $data: result}, d);
+        win.postMessage({$type: $type, $data: result}, d);
     }
-    
-    _handleResp(eventData, id, eventName) {
+
+    _handleResp(event, eventData, id, eventName) {
         let $data = eventData.$data,
             method = $data.status.toLocaleLowerCase() === RESOLVED ? 'resolve' : 'reject',
             key = `${id}${eventName}`;
         this._promises[key][method](eventData.$data.message);
         delete this._promises[key];
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.CrossMessage = CrossMessage;
 }
