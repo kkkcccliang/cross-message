@@ -40,3 +40,7 @@ crossMessage.onEvent('giveMeSomeResult', (data) => {
     return {status: 'resolved', message: someMessage}
 });
 ```
+
+## Test
+- npm run test.
+- gulp build, then open test/index.html, see the log in console.
