@@ -1,5 +1,5 @@
 # cross-message
-An extremely simple cross-document message implement, using promise style.
+A high level component of cross-document message with promise style.
 
 
 ## Install
