@@ -1,7 +1,3 @@
-/**
- * Created by liangjz on 11/30/15.
- */
-
 var gulp = require('gulp');
 var del = require('del');
 var browserify = require('browserify');
