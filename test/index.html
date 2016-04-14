@@ -9,14 +9,14 @@
             });
             var rets = [{status: 'resolved', message: 'OK'}, {status: 'rejected', message: 'Fail'}];
 
-            crossMessage.onEvent('frameEvent', function (data) {
+            crossMessage.on('frameEvent', function (data) {
                 console.log('Index: on frameEvent', data);
                 return rets[Math.round(Math.random())];
             });
 
             var cal = 0;
             var interval = setInterval(function () {
-                crossMessage.postEvent('indexEvent', 'index data' + ++cal).then(function (result) {
+                crossMessage.post('indexEvent', 'index data' + ++cal).then(function (result) {
                     console.log('Index: indexEvent resolved with', result);
                 }, function (error) {
                     console.log('Index: indexEvent rejected with', error);

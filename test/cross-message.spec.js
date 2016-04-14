@@ -20,27 +20,27 @@ describe('CrossMessage', () => {
                         thisWindow: window,
                         knownWindowOnly: false // for test
                     });
-                    crossMessage.onEvent('crossEventWithTrue', function () { return true; });
-                    crossMessage.onEvent('crossEventWithFalse', function () { return false; });
-                    crossMessage.onEvent('crossEventWithResolved', function () {
+                    crossMessage.on('crossEventWithTrue', function () { return true; });
+                    crossMessage.on('crossEventWithFalse', function () { return false; });
+                    crossMessage.on('crossEventWithResolved', function () {
                         return {status: 'resolved', message: 'OK'};
                     });
-                    crossMessage.onEvent('crossEventWithRejected', function () {
+                    crossMessage.on('crossEventWithRejected', function () {
                         return {status: 'rejected', message: 'Fail'};
                     });
-                    crossMessage.onEvent('crossEventWithPromiseResolved', function () {
+                    crossMessage.on('crossEventWithPromiseResolved', function () {
                         var defer = Promise.defer();
                         defer.resolve('Promise resolved');
                         return defer.promise;
                     });
-                    crossMessage.onEvent('crossEventWithPromiseRejected', function () {
+                    crossMessage.on('crossEventWithPromiseRejected', function () {
                         var defer = Promise.defer();
                         defer.reject('Promise rejected');
                         return defer.promise;
                     });
                     
-                    crossMessage.onEvent('testOffEvent', function (eventName) {
-                        crossMessage.offEvent(eventName);
+                    crossMessage.on('testOffEvent', function (eventName) {
+                        crossMessage.off(eventName);
                         return true;
                     });
                 }
@@ -64,53 +64,53 @@ describe('CrossMessage', () => {
         knownWindowOnly: false // for test
     });
 
-    describe('Test postEvent', () => {
+    describe('Test post', () => {
 
         it('should resolve with true', (done) => {
-            crossMessageParent.postEvent('crossEventWithTrue').then((result) => {
+            crossMessageParent.post('crossEventWithTrue').then((result) => {
                 expect(result).toBe(true);
                 done();
             });
         });
 
         it('should reject with false', (done) => {
-            crossMessageParent.postEvent('crossEventWithFalse').then(() => {}, (error) => {
+            crossMessageParent.post('crossEventWithFalse').then(() => {}, (error) => {
                 expect(error).toBe(false);
                 done();
             })
         });
 
         it('should resolve with "OK"', (done) => {
-            crossMessageParent.postEvent('crossEventWithResolved').then((result) => {
+            crossMessageParent.post('crossEventWithResolved').then((result) => {
                 expect(result).toEqual('OK');
                 done();
             })
         });
 
         it('should reject with "Fail"', (done) => {
-            crossMessageParent.postEvent('crossEventWithRejected').then(() => {}, (error) => {
+            crossMessageParent.post('crossEventWithRejected').then(() => {}, (error) => {
                 expect(error).toEqual('Fail');
                 done();
             })
         });
 
         it('should resolve with "Promise resolved"', (done) => {
-            crossMessageParent.postEvent('crossEventWithPromiseResolved').then((result) => {
+            crossMessageParent.post('crossEventWithPromiseResolved').then((result) => {
                 expect(result).toEqual('Promise resolved');
                 done();
             })
         });
 
         it('should reject with "Promise rejected"', (done) => {
-            crossMessageParent.postEvent('crossEventWithPromiseRejected').then(() => {}, (error) => {
+            crossMessageParent.post('crossEventWithPromiseRejected').then(() => {}, (error) => {
                 expect(error).toEqual('Promise rejected');
                 done();
             })
         });
 
-        it('should reject after offEvent with "No callback"', (done) => {
-            crossMessageParent.postEvent('testOffEvent', 'crossEventWithTrue').then(() => {
-                return crossMessageParent.postEvent('crossEventWithTrue');
+        it('should reject after off with "No callback"', (done) => {
+            crossMessageParent.post('testOffEvent', 'crossEventWithTrue').then(() => {
+                return crossMessageParent.post('crossEventWithTrue');
             }).then(() => {}, (error) => {
                 expect(error).toEqual('No specified callback of crossEventWithTrue');
                 done();

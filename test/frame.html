@@ -9,14 +9,14 @@
             });
             var rets = [{status: 'resolved', message: 'OK'}, {status: 'rejected', message: 'Fail'}];
 
-            crossMessage.onEvent('indexEvent', function (data) {
+            crossMessage.on('indexEvent', function (data) {
                 console.log('Frame: on indexEvent', data);
                 return rets[Math.round(Math.random())];
             });
 
             var cal = 0;
             var interval = setInterval(function () {
-                crossMessage.postEvent('frameEvent', 'frame data' + ++cal).then(function (result) {
+                crossMessage.post('frameEvent', 'frame data' + ++cal).then(function (result) {
                     console.log('Frame: frameEvent resolved with', result);
                 }, function (error) {
                     console.log('Frame: frameEvent rejected with', error);
