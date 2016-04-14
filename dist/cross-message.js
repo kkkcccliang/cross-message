@@ -33,7 +33,7 @@ var CrossMessage = exports.CrossMessage = function () {
 
 
         /**
-         * Set the global promise to use. Default to 'Promise' in modern browsers
+         * 在不支持Promise的browser里, 需要设置一个第三方的promise
          * @param Q
          */
         value: function usePromise(Q) {
@@ -43,10 +43,10 @@ var CrossMessage = exports.CrossMessage = function () {
         /**
          * Using window.postMessage magic. See https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
          * @param options
-         *        .otherWindow     The window that we want to communicate with.
-         *        .thisWindow       [optional] Default to current window that includes 'CrossMessage'
-         *        .domain           [optional] Default '*'
-         *        .knownWindowOnly  [optional] If true, receive event from 'otherWindow' only. Default to true
+         *        .otherWindow      需要通讯的目标窗口对象.
+         *        .thisWindow       [optional] 默认为引用CrossMessage脚本的当前窗口对象
+         *        .domain           [optional] 默认为'*'
+         *        .knownWindowOnly  [optional] 如果设置为true, 则只接收'otherWindow'发来的消息. 默认为true
          */
 
     }]);
@@ -67,14 +67,14 @@ var CrossMessage = exports.CrossMessage = function () {
         }
 
         options = (0, _utils.assign)({ thisWindow: window, domain: '*', knownWindowOnly: true }, options);
-        var thisWindow = options.thisWindow;
+        var thisWindow = this._thisWin = options.thisWindow;
         var otherWin = this._otherWin = options.otherWindow;
         var knownWindowOnly = !!options.knownWindowOnly;
         this._domain = options.domain;
         this._callbacks = {};
         this._promises = {};
 
-        addEventListener(thisWindow, 'message', function (event) {
+        addEventListener(thisWindow, 'message', this._listener = function (event) {
             if (knownWindowOnly && otherWin !== event.source) {
                 // Ignores the event doesn't belongs to this
                 return;
@@ -95,6 +95,14 @@ var CrossMessage = exports.CrossMessage = function () {
         });
     }
 
+    /**
+     * 向目标窗口'otherWindow'发送数据. 返回promise
+     * @param event     Event name
+     * @param data      String or object, 不能包含function
+     * @returns {promise}
+     */
+
+
     _createClass(CrossMessage, [{
         key: 'post',
         value: function post(event, data) {
@@ -113,15 +121,41 @@ var CrossMessage = exports.CrossMessage = function () {
                 };
             });
         }
+
+        /**
+         * 注册一个监听事件回调. 同一个事件只允许设置一个回调.
+         * 此回调函数会接收一个参数, 即'otherWindow'通过post发出的data
+         * @param event
+         * @param fn
+         */
+
     }, {
         key: 'on',
         value: function on(event, fn) {
             this._callbacks[event] = fn;
         }
+
+        /**
+         * 注销事件监听. 如果不传入event, 则全部注销
+         * @param event
+         */
+
     }, {
         key: 'off',
-        value: function off(event, fn) {
-            delete this._callbacks[event];
+        value: function off(event) {
+            event ? delete this._callbacks[event] : this._callbacks = {};
+        }
+
+        /**
+         * **重要**.
+         * 如果不是在全局作用域使用CrossMessage, 在作用域销毁之前需要调用此方法.
+         * 例如在一个SPA中, 在A子页面使用了CrossMessage, 在切换到其他页面之前(如果A子页面会被销毁), 需要调用此方法
+         */
+
+    }, {
+        key: 'clear',
+        value: function clear() {
+            removeEventListener(this._thisWin, 'message', this._listener);
         }
     }, {
         key: '_handleReq',
