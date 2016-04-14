@@ -63,10 +63,10 @@ var CrossMessage = exports.CrossMessage = function () {
         }
 
         if (!options.otherWindow) {
-            throw new Error('Must specify at least one window to communicate with');
+            throw new Error('Must specify "otherWindow" to communicate with');
         }
 
-        options = (0, _utils.assign)(options, { thisWindow: window, domain: '*', knownWindowOnly: true });
+        options = (0, _utils.assign)({ thisWindow: window, domain: '*', knownWindowOnly: true }, options);
         var thisWindow = options.thisWindow;
         var otherWin = this._otherWin = options.otherWindow;
         var knownWindowOnly = !!options.knownWindowOnly;
@@ -98,15 +98,20 @@ var CrossMessage = exports.CrossMessage = function () {
     _createClass(CrossMessage, [{
         key: 'postEvent',
         value: function postEvent(event, data) {
-            var defer = (0, _utils.getPromise)().defer();
-            ++_uniqueId;
+            var _this2 = this;
 
-            this._otherWin.postMessage({
-                $type: '' + _uniqueId + _requestPrefix + event,
-                $data: data
-            }, this._domain);
-
-            return (this._promises['' + _uniqueId + event] = defer).promise;
+            var Q = (0, _utils.getPromise)();
+            return new Q(function (resolve, reject) {
+                ++_uniqueId;
+                _this2._otherWin.postMessage({
+                    $type: '' + _uniqueId + _requestPrefix + event,
+                    $data: data
+                }, _this2._domain);
+                _this2._promises['' + _uniqueId + event] = {
+                    resolve: resolve,
+                    reject: reject
+                };
+            });
         }
     }, {
         key: 'onEvent',

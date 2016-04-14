@@ -76,15 +76,18 @@ export class CrossMessage {
     }
 
     postEvent(event, data) {
-        let defer = getPromise().defer();
-        ++_uniqueId;
-
-        this._otherWin.postMessage({
-            $type: `${_uniqueId}${_requestPrefix}${event}`,
-            $data: data
-        }, this._domain);
-
-        return (this._promises[`${_uniqueId}${event}`] = defer).promise;
+        let Q = getPromise();
+        return new Q((resolve, reject) => {
+            ++_uniqueId;
+            this._otherWin.postMessage({
+                $type: `${_uniqueId}${_requestPrefix}${event}`,
+                $data: data
+            }, this._domain);
+            this._promises[`${_uniqueId}${event}`] = {
+                resolve: resolve,
+                reject: reject
+            }
+        });
     }
 
     onEvent(event, fn) {

@@ -12,7 +12,7 @@ A high level component of cross-document message with promise style.
 ### Promise
 ```javascript
 // Within the browser that doesn't support Promise, set the external promise lib.
-CrossMessage.usePromise($q); // angular's $q, or jQuery's deferred for example
+CrossMessage.usePromise(SomePromise);
 ```
 
 ### Some document
