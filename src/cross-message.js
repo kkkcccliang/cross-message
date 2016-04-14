@@ -75,7 +75,7 @@ export class CrossMessage {
         });
     }
 
-    postEvent(event, data) {
+    post(event, data) {
         let Q = getPromise();
         return new Q((resolve, reject) => {
             ++_uniqueId;
@@ -90,11 +90,11 @@ export class CrossMessage {
         });
     }
 
-    onEvent(event, fn) {
+    on(event, fn) {
         this._callbacks[event] = fn;
     }
 
-    offEvent(event, fn) {
+    off(event, fn) {
         delete this._callbacks[event];
     }
 

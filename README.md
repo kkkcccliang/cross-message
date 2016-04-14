@@ -18,7 +18,7 @@ CrossMessage.usePromise(SomePromise);
 ### Some document
 ```javascript
 let crossMessage = new CrossMessage({otherWindow: theFrameWindow});
-crossMessage.postEvent('giveMeSomeResult', data).then((result) => {
+crossMessage.post('giveMeSomeResult', data).then((result) => {
     // ...
 }, (error) => {
     // ...
@@ -29,7 +29,7 @@ crossMessage.postEvent('giveMeSomeResult', data).then((result) => {
 ```javascript
 //
 let crossMessage = new CrossMessage({otherWindow: window.parent});
-crossMessage.onEvent('giveMeSomeResult', (data) => {
+crossMessage.on('giveMeSomeResult', (data) => {
     // ...
     
     // Simply return true for success or false for error.

@@ -96,8 +96,8 @@ var CrossMessage = exports.CrossMessage = function () {
     }
 
     _createClass(CrossMessage, [{
-        key: 'postEvent',
-        value: function postEvent(event, data) {
+        key: 'post',
+        value: function post(event, data) {
             var _this2 = this;
 
             var Q = (0, _utils.getPromise)();
@@ -114,13 +114,13 @@ var CrossMessage = exports.CrossMessage = function () {
             });
         }
     }, {
-        key: 'onEvent',
-        value: function onEvent(event, fn) {
+        key: 'on',
+        value: function on(event, fn) {
             this._callbacks[event] = fn;
         }
     }, {
-        key: 'offEvent',
-        value: function offEvent(event, fn) {
+        key: 'off',
+        value: function off(event, fn) {
             delete this._callbacks[event];
         }
     }, {
