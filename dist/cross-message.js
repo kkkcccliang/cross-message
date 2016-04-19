@@ -26,6 +26,7 @@ var _requestReg = new RegExp('^(\\d+)' + _requestPrefix + '(.*)');
 var _responseReg = new RegExp('^(\\d+)' + _responsePrefix + '(.*)');
 var RESOLVED = 'resolved';
 var REJECTED = 'rejected';
+var NOT_FOUND = 'notFound';
 
 var CrossMessage = exports.CrossMessage = function () {
     _createClass(CrossMessage, null, [{
@@ -100,6 +101,8 @@ var CrossMessage = exports.CrossMessage = function () {
      * @param event     Event name
      * @param data      String or object, 不能包含function
      * @returns {promise}
+     *
+     * promise返回的值格式为{status: xx, message: xx}
      */
 
 
@@ -127,6 +130,13 @@ var CrossMessage = exports.CrossMessage = function () {
          * 此回调函数会接收一个参数, 即'otherWindow'通过post发出的data
          * @param event
          * @param fn
+         *
+         * fn必须返回一个值, 可以是以下值之一. 其中status有三种状态: resolved, rejected, notFound.
+         * notFound是rejected的一种, 用于A向B通讯时, B中没有相应的处理事件的情况
+         * - 任意一个包含status属性并且没有function value的对象: {status: 'resolved', message: 'xxxx'}
+         *   如果没包含status属性, 则相当于 {status: 'resolved', message: theObject}
+         * - true/false, 相当于 {status: 'resolved', message: true}/{status: 'rejected', message: false}
+         * - promise: 这个promise必须resolve或reject以上值之一
          */
 
     }, {
@@ -162,7 +172,7 @@ var CrossMessage = exports.CrossMessage = function () {
         value: function _handleReq(event, eventData, id, eventName) {
             var cb = this._callbacks[eventName],
                 result = typeof cb === 'function' ? cb(eventData.$data) : {
-                status: REJECTED,
+                status: NOT_FOUND,
                 message: 'No specified callback of ' + eventName
             },
                 $type = '' + id + _responsePrefix + eventName,
@@ -177,19 +187,24 @@ var CrossMessage = exports.CrossMessage = function () {
                 });
                 return;
             }
-            // The callback returns with true/false, or an object without 'status' property(treat it as resolved with this object)
-            else if (!(0, _utils.isObject)(result) || !result.status) {
+            // The callback returns with true/false, or numbers any/0, or null/undefined would regard it as false.
+            else if (!(0, _utils.isObject)(result)) {
                     result = { status: !!result ? RESOLVED : REJECTED, message: result };
                 }
+                // Normal object.
+                else {
+                        var status = result.status;
+                        result = typeof status === 'string' ? result : { status: RESOLVED, message: result };
+                    }
             win.postMessage({ $type: $type, $data: result }, d);
         }
     }, {
         key: '_handleResp',
         value: function _handleResp(event, eventData, id, eventName) {
             var $data = eventData.$data,
-                method = $data.status.toLocaleLowerCase() === RESOLVED ? 'resolve' : 'reject',
+                method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
                 key = '' + id + eventName;
-            this._promises[key][method](eventData.$data.message);
+            this._promises[key][method]($data);
             delete this._promises[key];
         }
     }]);
