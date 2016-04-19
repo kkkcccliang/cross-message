@@ -68,42 +68,42 @@ describe('CrossMessage', () => {
 
         it('should resolve with true', (done) => {
             crossMessageParent.post('crossEventWithTrue').then((result) => {
-                expect(result).toBe(true);
+                expect(result.message).toBe(true);
                 done();
             });
         });
 
         it('should reject with false', (done) => {
             crossMessageParent.post('crossEventWithFalse').then(() => {}, (error) => {
-                expect(error).toBe(false);
+                expect(error.message).toBe(false);
                 done();
             })
         });
 
         it('should resolve with "OK"', (done) => {
             crossMessageParent.post('crossEventWithResolved').then((result) => {
-                expect(result).toEqual('OK');
+                expect(result.message).toEqual('OK');
                 done();
             })
         });
 
         it('should reject with "Fail"', (done) => {
             crossMessageParent.post('crossEventWithRejected').then(() => {}, (error) => {
-                expect(error).toEqual('Fail');
+                expect(error.message).toEqual('Fail');
                 done();
             })
         });
 
         it('should resolve with "Promise resolved"', (done) => {
             crossMessageParent.post('crossEventWithPromiseResolved').then((result) => {
-                expect(result).toEqual('Promise resolved');
+                expect(result.message).toEqual('Promise resolved');
                 done();
             })
         });
 
         it('should reject with "Promise rejected"', (done) => {
             crossMessageParent.post('crossEventWithPromiseRejected').then(() => {}, (error) => {
-                expect(error).toEqual('Promise rejected');
+                expect(error.message).toEqual('Promise rejected');
                 done();
             })
         });
@@ -112,7 +112,7 @@ describe('CrossMessage', () => {
             crossMessageParent.post('testOffEvent', 'crossEventWithTrue').then(() => {
                 return crossMessageParent.post('crossEventWithTrue');
             }).then(() => {}, (error) => {
-                expect(error).toEqual('No specified callback of crossEventWithTrue');
+                expect(error.message).toEqual('No specified callback of crossEventWithTrue');
                 done();
             })
         });

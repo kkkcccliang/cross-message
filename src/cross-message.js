@@ -157,15 +157,14 @@ export class CrossMessage {
         // Normal object.
         else {
             let status = result.status;
-            result = (typeof status === 'string' && status.toLowerCase() === RESOLVED || status.toLowerCase() === REJECTED) ?
-                result : {status: RESOLVED, message: result};
+            result = typeof status === 'string' ? result : {status: RESOLVED, message: result};
         }
         win.postMessage({$type: $type, $data: result}, d);
     }
 
     _handleResp(event, eventData, id, eventName) {
         let $data = eventData.$data,
-            method = $data.status.toLocaleLowerCase() === RESOLVED ? 'resolve' : 'reject',
+            method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
             key = `${id}${eventName}`;
         this._promises[key][method]($data);
         delete this._promises[key];
