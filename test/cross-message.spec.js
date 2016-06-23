@@ -22,21 +22,14 @@ describe('CrossMessage', () => {
                     });
                     crossMessage.on('crossEventWithTrue', function () { return true; });
                     crossMessage.on('crossEventWithFalse', function () { return false; });
-                    crossMessage.on('crossEventWithResolved', function () {
-                        return {status: 'resolved', message: 'OK'};
-                    });
-                    crossMessage.on('crossEventWithRejected', function () {
-                        return {status: 'rejected', message: 'Fail'};
+                    crossMessage.on('crossEventWithAnyData', function () {
+                        return 'OK';
                     });
                     crossMessage.on('crossEventWithPromiseResolved', function () {
-                        var defer = Promise.defer();
-                        defer.resolve('Promise resolved');
-                        return defer.promise;
+                        return Promise.resolve('Promise resolved');
                     });
                     crossMessage.on('crossEventWithPromiseRejected', function () {
-                        var defer = Promise.defer();
-                        defer.reject('Promise rejected');
-                        return defer.promise;
+                        return Promise.reject('Promise rejected');
                     });
                     
                     crossMessage.on('testOffEvent', function (eventName) {
@@ -68,42 +61,35 @@ describe('CrossMessage', () => {
 
         it('should resolve with true', (done) => {
             crossMessageParent.post('crossEventWithTrue').then((result) => {
-                expect(result.message).toBe(true);
+                expect(result).toBe(true);
                 done();
             });
         });
 
         it('should reject with false', (done) => {
             crossMessageParent.post('crossEventWithFalse').then(() => {}, (error) => {
-                expect(error.message).toBe(false);
+                expect(error).toBe(false);
                 done();
             })
         });
 
         it('should resolve with "OK"', (done) => {
-            crossMessageParent.post('crossEventWithResolved').then((result) => {
-                expect(result.message).toEqual('OK');
-                done();
-            })
-        });
-
-        it('should reject with "Fail"', (done) => {
-            crossMessageParent.post('crossEventWithRejected').then(() => {}, (error) => {
-                expect(error.message).toEqual('Fail');
+            crossMessageParent.post('crossEventWithAnyData').then((result) => {
+                expect(result).toEqual('OK');
                 done();
             })
         });
 
         it('should resolve with "Promise resolved"', (done) => {
             crossMessageParent.post('crossEventWithPromiseResolved').then((result) => {
-                expect(result.message).toEqual('Promise resolved');
+                expect(result).toEqual('Promise resolved');
                 done();
             })
         });
 
         it('should reject with "Promise rejected"', (done) => {
             crossMessageParent.post('crossEventWithPromiseRejected').then(() => {}, (error) => {
-                expect(error.message).toEqual('Promise rejected');
+                expect(error).toEqual('Promise rejected');
                 done();
             })
         });
@@ -112,7 +98,7 @@ describe('CrossMessage', () => {
             crossMessageParent.post('testOffEvent', 'crossEventWithTrue').then(() => {
                 return crossMessageParent.post('crossEventWithTrue');
             }).then(() => {}, (error) => {
-                expect(error.message).toEqual('No specified callback of crossEventWithTrue');
+                expect(error).toEqual('No specified callback of crossEventWithTrue');
                 done();
             })
         });

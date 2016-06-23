@@ -26,7 +26,6 @@ var _requestReg = new RegExp('^(\\d+)' + _requestPrefix + '(.*)');
 var _responseReg = new RegExp('^(\\d+)' + _responsePrefix + '(.*)');
 var RESOLVED = 'resolved';
 var REJECTED = 'rejected';
-var NOT_FOUND = 'notFound';
 
 var CrossMessage = exports.CrossMessage = function () {
     _createClass(CrossMessage, null, [{
@@ -172,7 +171,7 @@ var CrossMessage = exports.CrossMessage = function () {
         value: function _handleReq(event, eventData, id, eventName) {
             var cb = this._callbacks[eventName],
                 result = typeof cb === 'function' ? cb(eventData.$data) : {
-                status: NOT_FOUND,
+                status: REJECTED,
                 message: 'No specified callback of ' + eventName
             },
                 $type = '' + id + _responsePrefix + eventName,
@@ -187,9 +186,9 @@ var CrossMessage = exports.CrossMessage = function () {
                 });
                 return;
             }
-            // The callback returns with true/false, or numbers any/0, or null/undefined would regard it as false.
-            else if (!(0, _utils.isObject)(result)) {
-                    result = { status: !!result ? RESOLVED : REJECTED, message: result };
+            // The callback returns with true/false
+            else if (typeof result === 'boolean') {
+                    result = { status: result ? RESOLVED : REJECTED, message: result };
                 }
                 // Normal object.
                 else {
@@ -204,7 +203,7 @@ var CrossMessage = exports.CrossMessage = function () {
             var $data = eventData.$data,
                 method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
                 key = '' + id + eventName;
-            this._promises[key][method]($data);
+            this._promises[key][method]($data.message);
             delete this._promises[key];
         }
     }]);

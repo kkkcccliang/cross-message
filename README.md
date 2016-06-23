@@ -32,13 +32,11 @@ let crossMessage = new CrossMessage({otherWindow: window.parent});
 crossMessage.on('giveMeSomeResult', (data) => {
     // ...
     
-    // 必须返回一个值, 可以是以下值之一. 其中status有三种状态: resolved, rejected, notFound.
-    // notFound是rejected的一种, 用于A向B通讯时, B中没有相应的处理事件的情况
-    // - 任意一个包含status属性并且没有function value的对象: {status: 'resolved', message: 'xxxx'}
-    //   如果没包含status属性, 则相当于 {status: 'resolved', message: theObject}
-    // - true/false, 相当于 {status: 'resolved', message: true}/{status: 'rejected', message: false}
-    // - promise: 这个promise必须resolve或reject以上值之一
-    return {status: 'resolved', message: someMessage}
+    // 必须返回promise或者一个值.
+    // - promise
+    // - true/false, 相当于 Promise.resolve(true), Promise.reject(false)
+    // - 任意值, 相当于 Promise.resolve(value)
+    return Promise.resolve(xxx);
 });
 ```
 

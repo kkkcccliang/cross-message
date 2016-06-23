@@ -7,7 +7,7 @@
             var crossMessage = new CrossMessage({
                 otherWindow: window.parent
             });
-            var rets = [{status: 'resolved', message: 'OK'}, {status: 'rejected', message: 'Fail'}];
+            var rets = [Promise.resolve('OK'), Promise.reject('Fail')];
 
             crossMessage.on('indexEvent', function (data) {
                 console.log('Frame: on indexEvent', data);
