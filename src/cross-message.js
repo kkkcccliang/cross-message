@@ -20,6 +20,8 @@ let _requestReg = new RegExp('^(\\d+)' + _requestPrefix + '(.*)');
 let _responseReg = new RegExp('^(\\d+)' + _responsePrefix + '(.*)');
 let RESOLVED = 'resolved';
 let REJECTED = 'rejected';
+let _useQ = typeof Promise === 'function';
+let _useDefer = false;
 
 export class CrossMessage {
 
@@ -29,6 +31,8 @@ export class CrossMessage {
      */
     static usePromise(Q) {
         setPromise(Q);
+        _useQ = typeof Q === 'function';
+        _useDefer = typeof Q.defer === 'function';
     }
 
     /**
@@ -85,8 +89,7 @@ export class CrossMessage {
      */
     post(event, data) {
         let Q = getPromise();
-        return new Q((resolve, reject) => {
-            ++_uniqueId;
+        let _post = (resolve, reject) => {
             this._otherWin.postMessage({
                 $type: `${_uniqueId}${_requestPrefix}${event}`,
                 $data: data
@@ -95,7 +98,22 @@ export class CrossMessage {
                 resolve: resolve,
                 reject: reject
             }
-        });
+        };
+        ++_uniqueId;
+        
+        if (_useQ) {
+            return new Q((resolve, reject) => {
+                _post(resolve, reject);
+            });
+        }
+
+        if (_useDefer) {
+            let defer = Q.defer();
+            _post(defer.resolve, defer.reject);
+            return defer.promise;
+        }
+
+        throw new Error('Unknown promise.');
     }
 
     /**

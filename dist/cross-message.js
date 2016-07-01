@@ -26,6 +26,8 @@ var _requestReg = new RegExp('^(\\d+)' + _requestPrefix + '(.*)');
 var _responseReg = new RegExp('^(\\d+)' + _responsePrefix + '(.*)');
 var RESOLVED = 'resolved';
 var REJECTED = 'rejected';
+var _useQ = typeof Promise === 'function';
+var _useDefer = false;
 
 var CrossMessage = exports.CrossMessage = function () {
     _createClass(CrossMessage, null, [{
@@ -38,6 +40,8 @@ var CrossMessage = exports.CrossMessage = function () {
          */
         value: function usePromise(Q) {
             (0, _utils.setPromise)(Q);
+            _useQ = typeof Q === 'function';
+            _useDefer = typeof Q.defer === 'function';
         }
 
         /**
@@ -111,8 +115,7 @@ var CrossMessage = exports.CrossMessage = function () {
             var _this2 = this;
 
             var Q = (0, _utils.getPromise)();
-            return new Q(function (resolve, reject) {
-                ++_uniqueId;
+            var _post = function _post(resolve, reject) {
                 _this2._otherWin.postMessage({
                     $type: '' + _uniqueId + _requestPrefix + event,
                     $data: data
@@ -121,7 +124,22 @@ var CrossMessage = exports.CrossMessage = function () {
                     resolve: resolve,
                     reject: reject
                 };
-            });
+            };
+            ++_uniqueId;
+
+            if (_useQ) {
+                return new Q(function (resolve, reject) {
+                    _post(resolve, reject);
+                });
+            }
+
+            if (_useDefer) {
+                var defer = Q.defer();
+                _post(defer.resolve, defer.reject);
+                return defer.promise;
+            }
+
+            throw new Error('Unknown promise.');
         }
 
         /**
