@@ -116,6 +116,7 @@ var CrossMessage = exports.CrossMessage = function () {
 
             var Q = (0, _utils.getPromise)();
             var _post = function _post(resolve, reject) {
+                ++_uniqueId;
                 _this2._otherWin.postMessage({
                     $type: '' + _uniqueId + _requestPrefix + event,
                     $data: data
@@ -125,7 +126,6 @@ var CrossMessage = exports.CrossMessage = function () {
                     reject: reject
                 };
             };
-            ++_uniqueId;
 
             if (_useQ) {
                 return new Q(function (resolve, reject) {
@@ -187,11 +187,14 @@ var CrossMessage = exports.CrossMessage = function () {
     }, {
         key: '_handleReq',
         value: function _handleReq(event, eventData, id, eventName) {
-            var cb = this._callbacks[eventName],
-                result = typeof cb === 'function' ? cb(eventData.$data) : {
-                status: REJECTED,
-                message: 'No specified callback of ' + eventName
-            },
+            var cb = this._callbacks[eventName];
+
+            // 没有相应的回调, 不处理
+            if (typeof cb !== 'function') {
+                return;
+            }
+
+            var result = cb(eventData.$data),
                 $type = '' + id + _responsePrefix + eventName,
                 win = event.source,
                 d = this._domain;
@@ -221,8 +224,10 @@ var CrossMessage = exports.CrossMessage = function () {
             var $data = eventData.$data,
                 method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
                 key = '' + id + eventName;
-            this._promises[key][method]($data.message);
-            delete this._promises[key];
+            if (this._promises[key]) {
+                this._promises[key][method]($data.message);
+                delete this._promises[key];
+            }
         }
     }]);
 

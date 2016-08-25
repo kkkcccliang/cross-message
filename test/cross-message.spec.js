@@ -94,14 +94,5 @@ describe('CrossMessage', () => {
             })
         });
 
-        it('should reject after off with "No callback"', (done) => {
-            crossMessageParent.post('testOffEvent', 'crossEventWithTrue').then(() => {
-                return crossMessageParent.post('crossEventWithTrue');
-            }).then(() => {}, (error) => {
-                expect(error).toEqual('No specified callback of crossEventWithTrue');
-                done();
-            })
-        });
-
     });
 });
