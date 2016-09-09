@@ -1,7 +1,7 @@
 {
   "name": "cross-message",
   "description": "A high level component of cross-document message.",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/cross-message.min.js",
   "authors": [
     "liangjingzhan"

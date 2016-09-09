@@ -71,14 +71,14 @@ export class CrossMessage {
             }
 
             let eventData = event.data, matchRequest, matchResponse;
-            if (!eventData.cm$type) {
+            if (!eventData.$type) {
                 // Message does not belongs to cross-message
                 return;
             }
             
-            if (matchRequest = eventData.cm$type.match(_requestReg)) {
+            if (matchRequest = eventData.$type.match(_requestReg)) {
                 this._handleReq(event, eventData, matchRequest[1], matchRequest[2]);
-            } else if (matchResponse = eventData.cm$type.match(_responseReg)) {
+            } else if (matchResponse = eventData.$type.match(_responseReg)) {
                 this._handleResp(event, eventData, matchResponse[1], matchResponse[2]);
             }
         });
@@ -97,8 +97,8 @@ export class CrossMessage {
         let _post = (resolve, reject) => {
             ++_uniqueId;
             this._otherWin.postMessage({
-                cm$type: `${_uniqueId}${_requestPrefix}${event}`,
-                cm$data: data
+                $type: `${_uniqueId}${_requestPrefix}${event}`,
+                $data: data
             }, this._domain);
             this._promises[`${_uniqueId}${event}`] = {
                 resolve: resolve,
@@ -163,15 +163,15 @@ export class CrossMessage {
             return;
         }
         
-        let result = cb(eventData.cm$data),
-            cm$type = `${id}${_responsePrefix}${eventName}`,
+        let result = cb(eventData.$data),
+            $type = `${id}${_responsePrefix}${eventName}`,
             win = event.source, d = this._domain;
         // The callback returns a promise
         if (isPromise(result)) {
             result.then((realResult) => {
-                win.postMessage({cm$type: cm$type, cm$data: {status: RESOLVED, message: realResult}}, d);
+                win.postMessage({$type: $type, $data: {status: RESOLVED, message: realResult}}, d);
             }, (error) => {
-                win.postMessage({cm$type: cm$type, cm$data: {status: REJECTED, message: error}}, d)
+                win.postMessage({$type: $type, $data: {status: REJECTED, message: error}}, d)
             });
             return;
         }
@@ -184,15 +184,15 @@ export class CrossMessage {
             let status = result.status;
             result = typeof status === 'string' ? result : {status: RESOLVED, message: result};
         }
-        win.postMessage({cm$type: cm$type, cm$data: result}, d);
+        win.postMessage({$type: $type, $data: result}, d);
     }
 
     _handleResp(event, eventData, id, eventName) {
-        let cm$data = eventData.cm$data,
-            method = cm$data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
+        let $data = eventData.$data,
+            method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
             key = `${id}${eventName}`;
         if (this._promises[key]) {
-            this._promises[key][method](cm$data.message);
+            this._promises[key][method]($data.message);
             delete this._promises[key];
         }
     }
