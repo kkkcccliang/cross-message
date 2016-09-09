@@ -91,9 +91,14 @@ var CrossMessage = exports.CrossMessage = function () {
             var eventData = event.data,
                 matchRequest = void 0,
                 matchResponse = void 0;
-            if (matchRequest = eventData.$type.match(_requestReg)) {
+            if (!eventData.cm$type) {
+                // Message does not belongs to cross-message
+                return;
+            }
+
+            if (matchRequest = eventData.cm$type.match(_requestReg)) {
                 _this._handleReq(event, eventData, matchRequest[1], matchRequest[2]);
-            } else if (matchResponse = eventData.$type.match(_responseReg)) {
+            } else if (matchResponse = eventData.cm$type.match(_responseReg)) {
                 _this._handleResp(event, eventData, matchResponse[1], matchResponse[2]);
             }
         });
@@ -118,8 +123,8 @@ var CrossMessage = exports.CrossMessage = function () {
             var _post = function _post(resolve, reject) {
                 ++_uniqueId;
                 _this2._otherWin.postMessage({
-                    $type: '' + _uniqueId + _requestPrefix + event,
-                    $data: data
+                    cm$type: '' + _uniqueId + _requestPrefix + event,
+                    cm$data: data
                 }, _this2._domain);
                 _this2._promises['' + _uniqueId + event] = {
                     resolve: resolve,
@@ -194,16 +199,16 @@ var CrossMessage = exports.CrossMessage = function () {
                 return;
             }
 
-            var result = cb(eventData.$data),
-                $type = '' + id + _responsePrefix + eventName,
+            var result = cb(eventData.cm$data),
+                cm$type = '' + id + _responsePrefix + eventName,
                 win = event.source,
                 d = this._domain;
             // The callback returns a promise
             if ((0, _utils.isPromise)(result)) {
                 result.then(function (realResult) {
-                    win.postMessage({ $type: $type, $data: { status: RESOLVED, message: realResult } }, d);
+                    win.postMessage({ cm$type: cm$type, cm$data: { status: RESOLVED, message: realResult } }, d);
                 }, function (error) {
-                    win.postMessage({ $type: $type, $data: { status: REJECTED, message: error } }, d);
+                    win.postMessage({ cm$type: cm$type, cm$data: { status: REJECTED, message: error } }, d);
                 });
                 return;
             }
@@ -216,16 +221,16 @@ var CrossMessage = exports.CrossMessage = function () {
                         var status = result.status;
                         result = typeof status === 'string' ? result : { status: RESOLVED, message: result };
                     }
-            win.postMessage({ $type: $type, $data: result }, d);
+            win.postMessage({ cm$type: cm$type, cm$data: result }, d);
         }
     }, {
         key: '_handleResp',
         value: function _handleResp(event, eventData, id, eventName) {
-            var $data = eventData.$data,
-                method = $data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
+            var cm$data = eventData.cm$data,
+                method = cm$data.status.toLowerCase() === RESOLVED ? 'resolve' : 'reject',
                 key = '' + id + eventName;
             if (this._promises[key]) {
-                this._promises[key][method]($data.message);
+                this._promises[key][method](cm$data.message);
                 delete this._promises[key];
             }
         }
